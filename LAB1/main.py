@@ -69,42 +69,46 @@ def main():
 
     yLowerBound = round(min(yAxisData[0]),1)
     yUpperBound = 1.0
+    plotsColors = ["g", "k", "m", "b", "r"]
 
     #first plot
     graph.figure(figsize=(5, 4))
-
     graph.ylabel("Odsetek wygranych gier")
     graph.xlabel("Rozegranych gier")
     graph.ylim(yLowerBound, yUpperBound)
     graph.xlim(0, 500000)
-    graph.legend(shadow = True)
+    graph.axes().tick_params(direction='in',top = True, right = True)
+    for x, y, file, color in zip(xAxisData, yAxisData, files, plotsColors):
+        graph.plot(x, y, color, label=file)
+    graph.legend()
 
-    for x, y, file in zip(xAxisData, yAxisData, files):
-        graph.plot(x, y, label=file)
+    graph.savefig("figures_0.pdf")
 
 
 
     #second plot
     graph.figure(figsize=(10, 7))
     secondPlot =  graph.subplot(121)
-    #markers styles and types
-    markerStyles = ["g", "k", "m", "b", "r"]
+    #markers types
     markerType = ['v', 's', 'd', 'o', 'D' ]
-
     #plot data
-    for x, y, file, marker, type in zip(xAxisData, yAxisData, files, markerStyles, markerType):
-        secondPlot.plot(x, y, marker, label=file, linewidth = .9,  marker=type, markevery = 25, ms = 4)
+    for x, y, file, marker, type in zip(xAxisData, yAxisData, files, plotsColors, markerType):
+        secondPlot.plot(x, y, marker, label=file, linewidth = .9,  marker=type, markeredgecolor = 'k', markevery = 25, markersize = 6, ms = 4)
     secondPlot.set_ylabel("Odsetek wygranych gier [%]")
     secondPlot.set_xlabel("Rozegranych gier (x1000)")
     secondPlot.set_ylim(yLowerBound, yUpperBound)
     secondPlot.set_xlim(min(xAxisData[0]),max(xAxisData[0]))
+    secondPlot.axes.tick_params(direction='in', top = True, right = True)
+    secondPlot.grid(color = "grey", linestyle='dotted', linewidth=.5)
+
 
     #add top labels
     twiny = secondPlot.twiny()
     twiny.set_xlim(0,200)
     twiny.set_xticks([0,40,80,120,160,200])
     twiny.set_xlabel("Pokolenie")
-    secondPlot.legend(shadow = True, loc=4)
+    twiny.tick_params(direction="in")
+    secondPlot.legend(shadow = True, loc=4, numpoints=2)
 
     #yAxis formatting
     formatter = FuncFormatter(percent)
@@ -118,16 +122,27 @@ def main():
     data = []
     for x, file in zip(lastRow, files):
         data.append(x)
-    boxplot.boxplot(data, 1, 'b+', vert=True,
-                    showmeans=True, whis=1.5)
+    box = boxplot.boxplot(data, 1, 'b+', vert=True, whis=1.5)
+    #set box colors
+    for boxBorder in box['boxes']:
+        boxBorder.set_color('b')
+    for means in box['means']:
+        means.set_color('b')
+    for whiskers in box['whiskers']:
+        whiskers.set_color('b')
+        whiskers.set_linestyle('dashed')
+
     boxplot.set_ylim(yLowerBound, yUpperBound)
     formatter = FuncFormatter(percent)
     boxplot.yaxis.set_major_formatter(formatter)
     boxplot.yaxis.tick_right()
     boxplot.yaxis.set_label_position("right")
-    boxplot.grid(color = "tab:grey", linestyle='dashed', linewidth=1)
-    boxplot.scatter([i for i in range(1,6)], [rowMean(i) for i in lastRow])
-
+    boxplot.xaxis.set_ticklabels([i for i in files], rotation =20)
+    boxplot.grid(color = "grey", linestyle='dotted', linewidth=.5)
+    boxplot.tick_params(direction="in")
+    scattered = boxplot.scatter([i for i in range(1,6)], [rowMean(i) for i in lastRow])
+    scattered.set_facecolors('b')
+    graph.savefig("figures_1.pdf")
     graph.show()
 
 if __name__ == "__main__":
