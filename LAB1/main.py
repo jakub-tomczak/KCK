@@ -30,11 +30,6 @@ def getData(content):
     return xAxisData, yAxisData, lastColumn, lastRow[2:]
 
 
-def prepareData(xAxisData):
-    for i in range(len(xAxisData)):
-        for j in range(len(xAxisData[i])):
-            xAxisData[i][j] /= 1000
-
 def thousands(x, pos):
     return '%1d' % (x*1e-3)
 
