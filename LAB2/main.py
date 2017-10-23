@@ -6,7 +6,7 @@ def ex1():
     x = sym.symbols("x")
     eq = -x**3 + 3*x**2 + 10*x - 24
     res = solveset(eq, x)
-    print(res)
+    print("Pierwiastki równania ",eq," :",res)
     dataX = numpy.arange(-5,5,.1)
     dataY = [eq.subs(x, i).evalf() for i in dataX]
 
@@ -21,10 +21,12 @@ def ex1():
 def ex2():
     x, y = sym.symbols("x y")
     z = solve([x**2 + 3*y -10, 4*x - y**2 + 2])
-    print("Ex 2 result is\n", z)
+    print("Rowiązanie układu równań\n", z)
+    print("Liczba rozwiązań (par) ", len(z))
     return z
 
 def ex3(equation):
+    print("Rozwiązanie w postaci numerycznej:")
     for s in equation:
         for x, y in s.items():
             print(x, y.evalf())
@@ -33,20 +35,26 @@ def ex4():
     x = sym.symbols("x")
     eq = sin(log(x,2))*cos(x**2)/x
     eq = eq.diff()
-    print("Ex 4 solution is \n",eq)
+    print("Pochodna funkcji z zadania 5-tego:\n",eq)
 
 
 def ex5():
+    print("Biblioteka numpy")
     import numpy as np
     M = np.array([[1,3,1,2], [1,2,5,8], [3,1,2,9], [5,4,2,1]])
-    M = M[1:-1, :-1]
 
+    print("Przed usunięciem\n", M)
+    M = M[1:-1, :-1]
+    print("Po usunięciu\n", M)
 
     M2 = np.array([[2,3,1], [5,1,3]])
+    print("Przed transpozycją\n", M2)
     M2 = M2.T
+    print("Po transpozycji\n", M2)
+
 
     dotProduct = M.dot(M2)
-    print("Dot product is \n", dotProduct)
+    print("Iloczyn macierzy\n", dotProduct)
 
 
     #plot
