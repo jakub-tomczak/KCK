@@ -149,7 +149,8 @@ def normalizeMap(map):
                 minV = (minV[0], row + minV[1] - 1, col + minV[2] - 1)
                 maxV = (maxV[0], row + maxV[1] - 1, col + maxV[2] - 1)
 
-            if(minV[0] < map[row][col] and maxV[0] < map[row][col] or minV[0] < map[row][col] and maxV[0] < map[row][col]):
+            if(minV[0] < map[row][col] and maxV[0] < map[row][col] or minV[0] < map[row][col] and maxV[0] < map[row][col]
+               or maxV[0]-minV[0] < 5):
                 angle = 0
             else:
                 mainVector = np.array([col, row, map[row][col]])
@@ -196,16 +197,16 @@ def main():
     for row in range(0, mapHeight):
         for col in range(0, mapWidth):
             h = coloredMap[row][col]
-            s = lerp(start=1,stop=.6, value=normalizedMap[row][col]/90)
-            v = lerp(start=.7,stop=1, value=normalizedMap[row][col]/90)
+            s = lerp(start=1,stop=.7, value=normalizedMap[row][col]/180)
+            v = lerp(start=.9,stop=1, value=normalizedMap[row][col]/180)
 
-            r, g, b = hsv2rgb(h,1,1)
+            r, g, b = hsv2rgb(h,s,v)
             img[row][col][0] = r
             img[row][col][1] = g
             img[row][col][2] = b
 
     plt.imshow(img)
-    #plt.show()
+    plt.show()
     if(debug):
         plt.savefig("map_d.pdf")
     else:
