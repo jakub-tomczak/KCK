@@ -82,37 +82,37 @@ def gradient_rgb_bw(v):
 
 def gradient_rgb_gbr(v):
     if v < 0.5:
-        return scaleRGB((0, 1, 0), (0, 0, 1), 0, .5, v)
+        return lerpRGB((0, 1, 0), (0, 0, 1), 0, .5, v)
     else:
-        return scaleRGB((0, 0, 1), (1, 0, 0), .5, 1, v)
+        return lerpRGB((0, 0, 1), (1, 0, 0), .5, 1, v)
 
 
 def gradient_rgb_gbr_full(v):
     if(v > .75):
-        return scaleRGB((1, 0, 1), (1, 0, 0), .75, 1, v)
+        return lerpRGB((1, 0, 1), (1, 0, 0), .75, 1, v)
     elif(v > .5):
-        return scaleRGB((0, 0, 1), (1, 0, 1), .5, .75, v)
+        return lerpRGB((0, 0, 1), (1, 0, 1), .5, .75, v)
     elif(v > .25):
-        return scaleRGB((0, 1, 1), (0, 0, 1), .25, .5, v)
+        return lerpRGB((0, 1, 1), (0, 0, 1), .25, .5, v)
     else:
-        return scaleRGB((0, 1, 0), (0, 1, 1), 0, .25, v)
+        return lerpRGB((0, 1, 0), (0, 1, 1), 0, .25, v)
 
 
 def gradient_rgb_wb_custom(v):
     if(v > .84):
-        return scaleRGB((1, 0, 0), (0, 0, 0), .84, 1, v)
+        return lerpRGB((1, 0, 0), (0, 0, 0), .84, 1, v)
     elif(v > .70):
-        return scaleRGB((0, 1, 0), (1, 0, 0), .70, .84, v)
+        return lerpRGB((0, 1, 0), (1, 0, 0), .70, .84, v)
     elif(v > .56):
-        return scaleRGB((0, 1, 1), (0, 1, 0), .56, .70, v)
+        return lerpRGB((0, 1, 1), (0, 1, 0), .56, .70, v)
     elif(v > .42):
-        return scaleRGB((0, 1, 1), (0, 1, 1), .42, 56, v)
+        return lerpRGB((0, 1, 1), (0, 1, 1), .42, 56, v)
     elif(v > .28):
-        return scaleRGB((1, 0, 1), (0, 1, 1), .28, .42, v)
+        return lerpRGB((1, 0, 1), (0, 1, 1), .28, .42, v)
     elif(v > .14):
-        return scaleRGB((1, 1, 0), (1, 0, 1), .14, .28, v)
+        return lerpRGB((1, 1, 0), (1, 0, 1), .14, .28, v)
     else:
-        return scaleRGB((1, 1, 1), (1, 1, 0), 0, .14, v)
+        return lerpRGB((1, 1, 1), (1, 1, 0), 0, .14, v)
 
 
 def gradient_hsv_bw(v):
@@ -128,7 +128,7 @@ def gradient_hsv_unknown(v):
 def gradient_hsv_custom(start, v):
     return hsv2rgb(360* (start + (1-v)), 1, 1)
 
-def scaleRGB(color_in, color_out, start, end, step):
+def lerpRGB(color_in, color_out, start, end, step):
     r1, g1, b1 = color_in
     r2, g2, b2 = color_out
     percent = (step - start) / (end - start)
