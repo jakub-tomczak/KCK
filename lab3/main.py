@@ -32,14 +32,14 @@ def plot_color_gradients(gradients, names):
         # Create image with two lines and draw gradient on it
         img = np.zeros((2, 1024, 3))
         if (gradient == gradient_hsv_custom):
-            start = x/w
-            print("start is", start*360)
+            start = mean
+            print("start is", start)
         else:
             start = 0
 
         for i, v in enumerate(np.linspace(start, 1, 1024)):
             if(start > 0):   #custom function
-                gradient_hsv_custom(start, v)
+                img[:, i] = gradient_hsv_custom(start, v)
             else:
                 img[:, i] = gradient(v)
 
@@ -51,7 +51,7 @@ def plot_color_gradients(gradients, names):
         x_text = pos[0] - 0.25
         y_text = pos[1] + pos[3]/2.
         fig.text(x_text, y_text, name, va='center', ha='left', fontsize=10)
-    fig.show()
+    #fig.show()
     fig.savefig('gradients.pdf')
 
 def hsv2rgb(h, s, v):
@@ -126,7 +126,7 @@ def gradient_hsv_unknown(v):
     return hsv2rgb(120-120*v,.5,1)
 
 def gradient_hsv_custom(start, v):
-    return hsv2rgb(360* (start + (1-v)), 1, 1)
+    return hsv2rgb(360 * (start + (1 - v)), 1, 1)
 
 def lerpRGB(color_in, color_out, start, end, step):
     r1, g1, b1 = color_in

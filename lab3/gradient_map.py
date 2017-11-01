@@ -76,6 +76,12 @@ def getMinMaxNeigh(neigh, middleElement):
     #   lower           higher
     #   the same        the same
 
+def normalizeMap2(map):
+    sunVector = [1,1,5]
+    #import numpy as
+    #normalizedMap = np.empty([len(map),len(map)])
+
+
 def normalizeMap(map):
     sunVector = [1,1,5]
     rows = len(map)
@@ -190,23 +196,25 @@ def main():
     normalizedMap = normalizeMap(map)
     import matplotlib.pyplot as plt
     #represent array as list of RGB values
-    #img = [[hsv2rgb(coloredMap[row][col], lerp(start=1,stop=.2, value=normalizedMap[row][col]/180), lerp(start=1,stop=.5,
-    # value=normalizedMap[row][col]/180)) for col in range(0, len(coloredMap[row] ))] for row in range(0,len(coloredMap))]
-    import numpy as np
+    img = [[hsv2rgb(coloredMap[row][col],
+                    lerp(start=1,stop=.2, value=normalizedMap[row][col]/180),
+                    lerp(start=.8,stop=1, value=normalizedMap[row][col]/180))
+            for col in range(0, len(coloredMap[row] ))] for row in range(0,len(coloredMap))]
+    '''import numpy as np
     img = np.empty([mapHeight, mapWidth, 3])
     for row in range(0, mapHeight):
         for col in range(0, mapWidth):
             h = coloredMap[row][col]
-            s = lerp(start=1,stop=.7, value=normalizedMap[row][col]/180)
+            s = lerp(start=1,stop=.5, value=normalizedMap[row][col]/180)
             v = lerp(start=.9,stop=1, value=normalizedMap[row][col]/180)
 
             r, g, b = hsv2rgb(h,s,v)
             img[row][col][0] = r
             img[row][col][1] = g
-            img[row][col][2] = b
+            img[row][col][2] = b'''
 
     plt.imshow(img)
-    plt.show()
+    #plt.show()
     if(debug):
         plt.savefig("map_d.pdf")
     else:
