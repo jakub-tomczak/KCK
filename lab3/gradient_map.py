@@ -91,14 +91,11 @@ def main():
     normalizedMap = normalizeMap(map)
     import matplotlib.pyplot as plt
     #represent array as list of RGB values
-    try:
-
-        img = [[hsv2rgb(coloredMap[row][col],
+    img = [[hsv2rgb(coloredMap[row][col],
                     lerp(start=1,stop=.5, value=normalizedMap[row][col]/180),
                     lerp(start=1,stop=.5, value=normalizedMap[row][col]/180))
             for col in range(0, len(coloredMap[row]) - 1)] for row in range(0,len(coloredMap) - 1)]
-    except IndexError:
-        print("index error")
+
     '''import numpy as np
     img = np.empty([mapHeight, mapWidth, 3])
     for row in range(0, mapHeight):
