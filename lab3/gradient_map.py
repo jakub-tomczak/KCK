@@ -47,144 +47,39 @@ def colorMap(map):
     coloredMap = [[lerp(start = 120, stop = 0, value = (i-minH)/rangeSpan) for i in row] for row in map]
     return coloredMap
 
-#get highest and lowest neighbour
-#neigh array of size either 3x3 or 2x2
-#middleElement is tuple (row,col)
-def getMinMaxNeigh(neigh, middleElement):
-    rows = len(neigh)
-    cols = len(neigh[0])
-    #min and max values are represented as tuples (value, row, col)
-    minElement = (500, -1, -1)
-    maxElement = (0, -1, -1)
 
-    for row in range(0, rows):
-        for col in range(0, cols):
-            if(row == middleElement[0] and col == middleElement[1]):
-                continue
+sunVector = [-200, -200, 500]
+#col, row height
+def calculateAngle(mainVector, bottomVector, rightVector):
+    import math as m
+    import numpy as np
+    try:
+        normalVector = np.cross(bottomVector - mainVector, rightVector - mainVector)
+    except np.core._internal.AxisError:
+        print("blad")
+    angle = m.degrees(np.arccos(
+        np.dot(normalVector, sunVector) / (np.linalg.norm(normalVector) * np.linalg.norm(sunVector))
+    ))
+    return angle
+'''
+    if (angle > 170):
+        print("({x},{y})".format(x=row, y=col), "Min is ", minV, " Max is", maxV,
+          "normal vector is {normal}".format(normal=normalVector), " angle is ", angle)
 
-            value = neigh[row][col]
-            if(value < minElement[0]):
-                minElement = (value, row, col)
-            if(value > maxElement[0]):
-                maxElement = (value, row, col)
-
-    return (minElement, maxElement)
-    #cases:
-    #   minElement      maxElement
-    #   higher          higher
-    #   lower           lower
-    #   lower           higher
-    #   the same        the same
-
-def normalizeMap2(map):
-    sunVector = [1,1,5]
-    #import numpy as
-    #normalizedMap = np.empty([len(map),len(map)])
+'''
 
 
 def normalizeMap(map):
-    sunVector = [1,1,5]
-    rows = len(map)
-    cols = len(map[0])
     import numpy as np
-    normalizedMap = np.empty([len(map), len(map[0])])
-    maxAngle = 0
-    for row in range(0,rows):
-        for col in range(0, cols):
-            neigh = []
-            if(row == 0 or row == rows - 1):
-                #top or bottom row
-                neighRow = map[:2]      #we are in the top row
-                middleRow = 0
-                if(row == rows - 1):
-                    neighRow = map[-2:]  #we are in the bottom row
-                    middleRow = 1
-
-                if(col == 0):           #top/bottom left
-                    neigh = [ r[:2] for r in neighRow]
-                    minV, maxV = getMinMaxNeigh(neigh, (middleRow, 0))
-
-                    minV = (minV[0], middleRow*(row - ((minV[1] - 1) * (-1)) ) + (middleRow-1)*(-1)*minV[1], minV[2] )
-                    maxV = (maxV[0], middleRow*(row - ((maxV[1] - 1) * (-1)) ) + (middleRow-1)*(-1)*maxV[1], maxV[2])
-
-                elif(col == cols - 1):    #top/bottom right
-                    neigh = [ r[-2:] for r in neighRow]
-                    minV, maxV = getMinMaxNeigh(neigh, (middleRow, 1))
-                    # row - middleRow*((minV[1]-1)*(-1)) for row == 0 returns row
-                    # for last row decreases row by either 1 or 0
-                    minV = (minV[0], middleRow*(row - ((minV[1] - 1) * (-1)) ) + (middleRow-1)*(-1)*minV[1], col + minV[2] - 1)
-                    maxV = (maxV[0], middleRow*(row - ((maxV[1] - 1) * (-1)) ) + (middleRow-1)*(-1)*maxV[1], col + maxV[2] - 1)
 
 
-                else:
-                    neigh = [ r[col-1:col+2] for r in neighRow]
-                    minV, maxV = getMinMaxNeigh(neigh, (middleRow, 1))
-                    # row - middleRow*((minV[1]-1)*(-1)) for row == 0 returns row
-                    # for last row decreases row by either 1 or 0
-                    minV = (minV[0], middleRow*(row - ((minV[1] - 1) * (-1)) ) + (middleRow-1)*(-1)*minV[1],
-                            col + minV[2] - 1)
-                    maxV = (maxV[0], middleRow*(row - ((maxV[1] - 1) * (-1)) ) + (middleRow-1)*(-1)*maxV[1],
-                            col + maxV[2] - 1)
-
-
-            elif(col == 0 ):
-                #left column
-                neighRow = map[row-1:row+2]  # we are in the top row
-                neigh = [r[:2] for r in neighRow]
-                minV, maxV = getMinMaxNeigh(neigh, (1, 0))
-                # row - middleRow*((minV[1]-1)*(-1)) for row == 0 returns row
-                # for last row decreases row by either 1 or 0
-                minV = (minV[0], row + minV[1] - 1, col + minV[2])
-                maxV = (maxV[0], row + maxV[1] - 1, col + maxV[2])
-
-
-
-            elif(col == cols - 1):
-                #right column
-                neighRow = map[row-1:row+2]  # we are in the top row
-                neigh = [r[-2:] for r in neighRow]
-                minV, maxV = getMinMaxNeigh(neigh, (1, 1))
-                # col - (maxV[0]-1)*(-1) -> col - 1 if maxV[0] == 0 or col - 0 if maxV[0] == 1
-                minV = (minV[0], row + minV[1] - 1, col - (minV[2]-1)*(-1))
-                maxV = (maxV[0], row + maxV[1] - 1, col - (maxV[2]-1)*(-1))
-
-            else:
-                neighRow = map[row - 1: row + 2]            #get 3 rows
-                neigh = [ r[col-1:col+2] for r in neighRow] #get 3 columns
-                minV, maxV = getMinMaxNeigh(neigh, (1,1))
-                minV = (minV[0], row + minV[1] - 1, col + minV[2] - 1)
-                maxV = (maxV[0], row + maxV[1] - 1, col + maxV[2] - 1)
-
-            if(minV[0] < map[row][col] and maxV[0] < map[row][col] or minV[0] < map[row][col] and maxV[0] < map[row][col]
-               or maxV[0]-minV[0] < 5):
-                angle = 0
-            else:
-                mainVector = np.array([col, row, map[row][col]])
-                firstVector = np.array([minV[2], minV[1], minV[0]])
-                secondVector = np.array([maxV[2], maxV[1], maxV[0]])
-
-                import math as m
-                normalVector = np.cross(firstVector - mainVector, secondVector - mainVector)
-                angle = m.degrees(np.arccos(
-                    np.dot(normalVector, sunVector) / (np.linalg.norm(normalVector) * np.linalg.norm(sunVector))
-                ))
-
-            if(angle > maxAngle):
-                maxAngle = angle
-            angle = angle / 2
-            if(angle>170):
-                print("({x},{y})".format(x = row, y = col),"Min is ", minV, " Max is", maxV, "normal vector is {normal}".format(normal = normalVector), " angle is ", angle)
-
-            normalizedMap[row][col] = angle
-            #print(row, col, minV, maxV)
-    print(maxAngle)
-
-
+    normalizedMap = [[ calculateAngle(np.array([row, col, map[row][col]]) , np.array([row+1, col, map[row+1][col]]), np.array([row, col+1, map[row][col+1]]))
+                      for col in range(0, len(map[row]) - 1)] for row in range(0, len(map) - 1)]
     return normalizedMap
 
 
 def main():
-    debug = not True
+    debug = False
     if(not debug):
         map, mapWidth, mapHeight, distance = importData("big.dem")
     else:
@@ -196,10 +91,14 @@ def main():
     normalizedMap = normalizeMap(map)
     import matplotlib.pyplot as plt
     #represent array as list of RGB values
-    img = [[hsv2rgb(coloredMap[row][col],
-                    lerp(start=1,stop=.2, value=normalizedMap[row][col]/180),
-                    lerp(start=.8,stop=1, value=normalizedMap[row][col]/180))
-            for col in range(0, len(coloredMap[row] ))] for row in range(0,len(coloredMap))]
+    try:
+
+        img = [[hsv2rgb(coloredMap[row][col],
+                    lerp(start=1,stop=.5, value=normalizedMap[row][col]/180),
+                    lerp(start=1,stop=.5, value=normalizedMap[row][col]/180))
+            for col in range(0, len(coloredMap[row]) - 1)] for row in range(0,len(coloredMap) - 1)]
+    except IndexError:
+        print("index error")
     '''import numpy as np
     img = np.empty([mapHeight, mapWidth, 3])
     for row in range(0, mapHeight):
@@ -214,7 +113,7 @@ def main():
             img[row][col][2] = b'''
 
     plt.imshow(img)
-    #plt.show()
+   # plt.show()
     if(debug):
         plt.savefig("map_d.pdf")
     else:
