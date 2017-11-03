@@ -38,28 +38,26 @@ def showHist(image, filename=""):
 
 def getMean(desc, image):
     mean = np.mean(image)
-    max = np.max(image, axis=1)
-    print("{} image mean = {}, max = ".format(desc,mean, max))
+    print("{} image mean = {}".format(desc,mean))
     return mean
 
 def getMax(desc, image):
-    mean = np.mean(image)
     maxV = max(np.max(image, axis=1))
-    print("{} image mean = {}, max = {}".format(desc,mean, maxV))
+    print("{} image max = {}".format(desc, maxV))
     return maxV
 
 def sobel(img):
     return filters.sobel(rgb2gray(img))
 
 def colorThreshold(image, t):
-    processed = (image > t)
+    processed = (image > t) * 1
     flush_figures()
     return processed
 
 def readImage(name):
     return  io.imread("data/{img}.jpg".format(img = name))
 
-def displaySaveImage(imgs, filename = "planes.png"):
+def displaySaveImage(imgs, filename = "planes_bin.png"):
     fig = figure(figsize=(10,20))
     if len(imgs) == 1:
         rows = 1
@@ -74,8 +72,8 @@ def processAll():
     planesCount = 19
     images = [readImage("samolot%02d" % i) for i in range(0, planesCount+ 1)]
     sobelImages = [sobel(image) for image in images]
-    binary = [colorThreshold(image, getMax("zdjecie", image)*.5) for image in sobelImages]
-    displaySaveImage(sobelImages)
+    binary = [colorThreshold(image, getMax("zdjecie", image)*.3) for image in sobelImages]
+    displaySaveImage(images + binary)
 
 def processOne(number):
     filename = "samolot%02d" % number
@@ -88,7 +86,7 @@ def processOne(number):
     maxV = getMax("sobel", sobelImage)
 
 
-    binary = colorThreshold(sobelImage, maxV)
+    binary = colorThreshold(sobelImage, maxV*.25)
     getMean("binary", binary)
     showHist(binary,"binary_{}".format(number))
 
@@ -97,7 +95,7 @@ def processOne(number):
 
 
 def main():
-    debug = True
+    debug = False
 
     if debug:
         try:
