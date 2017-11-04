@@ -2,6 +2,7 @@
 from __future__ import division
 from pylab import *
 import skimage as ski
+from skimage import feature
 from skimage import data, io, filters, exposure
 from skimage.filters import rank
 from skimage import img_as_float, img_as_ubyte
@@ -25,7 +26,7 @@ def plot_hist(img):
     xlim(0, 10)
 
 def showHist(image, filename=""):
-    fig = figure(figsize=(15, 5))
+    fig = figure(figsize=(30, 30))
     subplot(1, 2, 1)
     plt.imshow(image, cmap='gray')
     subplot(1, 2, 2)
@@ -34,7 +35,7 @@ def showHist(image, filename=""):
     if len(filename) > 0:
         fig.savefig("out/hist_{}.png".format(filename))
     else:
-        fig.show()
+        plt.show()
 
 def getMean(desc, image):
     mean = np.mean(image)
@@ -46,8 +47,11 @@ def getMax(desc, image):
     print("{} image max = {}".format(desc, maxV))
     return maxV
 
-def sobel(img):
-    return filters.sobel(rgb2gray(img))
+def sobel(img, gray=True):
+    if gray:
+        return filters.sobel(rgb2gray(img))
+    else:
+        return filters.sobel(img)
 
 def colorThreshold(image, t):
     processed = (image > t) * 1
@@ -62,36 +66,85 @@ def displaySaveImage(imgs, filename = "planes_bin.png"):
     if len(imgs) == 1:
         rows = 1
     else:
-        rows = int(len(imgs)/2 )
+        rows = int(len(imgs)/2 +1)
     for i in range(0, len(imgs)):
         subplot(rows, 2, i+1)
         io.imshow(imgs[i])
     fig.savefig("out/"+filename, dpi=300)
 
+def imageProcessor(img, filename="planes_bin.png"):
+    img = rgb2gray(img)**.4
+
+    sobelImage = sobel(img, False)
+    #showHist(sobelImage, "sobel_{}".format(number))
+    showHist(sobelImage)
+    mean = getMean("sobel_mean_", sobelImage)
+
+    maxV = getMax("sobel_max_", sobelImage)
+
+    print("maxV", maxV, " mean ", mean)
+    binary = colorThreshold(sobelImage, maxV*.2)
+
+    sobo2 = sobel(binary)
+    showHist(binary)
+    getMean("binary", binary)
+    #showHist(binary,"binary_{}".format(number))
+
+    showHist(sobo2)
+
+    displaySaveImage([sobo2], filename)
+
+
 def processAll():
-    planesCount = 19
+    planesCount = 20
     images = [readImage("samolot%02d" % i) for i in range(0, planesCount+ 1)]
-    sobelImages = [sobel(image) for image in images]
-    binary = [colorThreshold(image, getMax("zdjecie", image)*.3) for image in sobelImages]
-    displaySaveImage(images + binary)
+    greyImgs = [rgb2gray(img) for img in images]
+    cannys = [ski.feature.canny(image, sigma=1) for image in greyImgs]
+    displaySaveImage(cannys)
+    return 1
+    sobelImages = [sobel(image, False) for image in greyImgs]
+    #[print("mean/max is ", np.mean(i)/max(np.max(i, axis=1))) for i in sobelImages]
+    binary = [colorThreshold(image, getMax("zdjecie", image)*.1) for image in sobelImages]
+
+    K = np.array([
+        [1,1,1],
+        [1,0,1],
+        [1,1,1]
+    ])
+    K = K/8
+    processStep2 = [ski.feature.canny(image, sigma=1) for image in binary]
+    displaySaveImage(processStep2)
+
 
 def processOne(number):
     filename = "samolot%02d" % number
     print("processing " + filename)
     image = [readImage(filename)]
+    canny = ski.feature.canny(rgb2gray(image[0]), sigma=5)
+    showHist(canny)
 
+    img = rgb2gray(image[0])**2
 
-    sobelImage = sobel(image[0])
-    showHist(sobelImage, "sobel_{}".format(number))
-    maxV = getMax("sobel", sobelImage)
+    sobelImage = sobel(img, False)
+    #showHist(sobelImage, "sobel_{}".format(number))
+    #showHist(sobelImage)
+    mean = getMean("sobel_mean_", sobelImage)
 
+    maxV = getMax("sobel_max_", sobelImage)
 
-    binary = colorThreshold(sobelImage, maxV*.25)
+    print("maxV", maxV, " mean ", mean)
+    binary = colorThreshold(sobelImage, maxV*.1)
+
+    sobo2 = sobel(binary)
+    showHist(binary)
     getMean("binary", binary)
     showHist(binary,"binary_{}".format(number))
 
+    showHist(sobo2)
 
-    displaySaveImage([binary], filename)
+    canny = ski.feature.canny(binary, sigma=1)
+    showHist(canny)
+    #displaySaveImage([binary], filename)
 
 
 def main():
@@ -99,14 +152,36 @@ def main():
 
     if debug:
         try:
-            processOne(15)
+            processOne(14)
+            #[processOne(i) for i in [2,6,13,14,15,20]]
         except FileNotFoundError:
             print("Podany plik nie istnieje")
 
     else:
         processAll()
+    print("done")
 
+def contour():
+    import numpy as np
+    import matplotlib.pyplot as plt
 
+    from skimage import measure
+    img = readImage("samolot00")
+    img = rgb2gray(img)
+    # Find contours at a constant value of 0.8
+    contours = measure.find_contours(img, 0.7)
 
+    # Display the image and plot all contours found
+    fig, ax = plt.subplots()
+    ax.imshow(img, interpolation='nearest', cmap=plt.cm.gray)
+
+    for n, contour in enumerate(contours):
+        ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
+
+    ax.axis('image')
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.show()
 if __name__ == "__main__":
     main()
