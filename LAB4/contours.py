@@ -1,33 +1,28 @@
-#%matplotlib inline
 from __future__ import division
 from pylab import *
-import skimage as ski
-from skimage import feature
-from skimage import data, io, filters, exposure
-from skimage.filters import rank
-from skimage import img_as_float, img_as_ubyte
-from skimage.morphology import disk
+from skimage import io, filters
 import skimage.morphology as mp
-from skimage import util
-from skimage.color import rgb2hsv, hsv2rgb, rgb2gray
-from skimage.filters.edges import convolve
-from matplotlib import pylab as plt
+from skimage.color import rgb2gray
+
 import numpy as np
-from numpy import array
-from IPython.display import display
-from ipywidgets import interact, interactive, fixed
-from ipywidgets import *
 from ipykernel.pylab.backend_inline import flush_figures
 
+def contourDetector(image, threshold = .15):
+    gray = rgb2gray(image)
+    sobelImage = filters.sobel(gray)
+    thresold = mp.dilation(colorThreshold(sobelImage, getMax(sobelImage)*threshold))
+    return thresold
 
+def processAll(threshold = .15):
+    lastFileIndex = 20
+    images = [readImage("samolot%02d" % i) for i in range(0, lastFileIndex+ 1)]
+    contours = [contourDetector(image) for image in images]
+    displaySaveImage(contours, "planes_t{}.png".format(threshold))
 
-def processAll(gamma = 1, threshold = .15):
-    planesCount = 20
-    images = [rgb2gray(readImage("samolot%02d" % i)) for i in range(0, planesCount+ 1)]
-    sobelImages = [filters.sobel(image) for image in images]
-    thresold = [mp.erosion( mp.dilation(colorThreshold(image, getMax(image)*threshold))) for image in sobelImages]
-    displaySaveImage(thresold, "planes_g{}_t{}_dilation_er_debug.png".format(gamma, threshold))
-
+def processOne(number):
+    filename = "samolot%02d" % number
+    image = readImage(filename)
+    displaySaveImage([contourDetector(image)], filename)
 
 def colorThreshold(image, t):
     processed = (image > t) * 1
@@ -41,7 +36,7 @@ def getMax(image):
 def readImage(name):
     return  io.imread("data/{img}.jpg".format(img = name))
 
-def displaySaveImage(imgs, filename = "planes.png"):
+def displaySaveImage(imgs, filename = "planes.png", resolution = 500):
     fig = figure(figsize=(20,20))
     if len(imgs) == 1:
         rows = 1
@@ -50,7 +45,7 @@ def displaySaveImage(imgs, filename = "planes.png"):
     for i in range(0, len(imgs)):
         subplot(rows, 2, i+1)
         io.imshow(imgs[i])
-    fig.savefig("out/"+filename, dpi=500)
+    fig.savefig("out/"+filename, dpi=resolution)
 
 def main():
     processAll()
