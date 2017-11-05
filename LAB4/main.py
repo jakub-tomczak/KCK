@@ -62,7 +62,7 @@ def readImage(name):
     return  io.imread("data/{img}.jpg".format(img = name))
 
 def displaySaveImage(imgs, filename = "planes_bin.png"):
-    fig = figure(figsize=(10,20))
+    fig = figure(figsize=(20,20))
     if len(imgs) == 1:
         rows = 1
     else:
@@ -70,7 +70,7 @@ def displaySaveImage(imgs, filename = "planes_bin.png"):
     for i in range(0, len(imgs)):
         subplot(rows, 2, i+1)
         io.imshow(imgs[i])
-    fig.savefig("out/"+filename, dpi=300)
+    fig.savefig("out/"+filename, dpi=500)
 
 def imageProcessor(img, filename="planes_bin.png"):
     img = rgb2gray(img)**.4
@@ -98,31 +98,25 @@ def imageProcessor(img, filename="planes_bin.png"):
 def processAll():
     planesCount = 20
     images = [readImage("samolot%02d" % i) for i in range(0, planesCount+ 1)]
-    greyImgs = [rgb2gray(img) for img in images]
-    cannys = [ski.feature.canny(image, sigma=1) for image in greyImgs]
-    displaySaveImage(cannys)
-    return 1
+    greyImgs = [rgb2gray(img)**.8 for img in images]
+    '''cannys = [ski.feature.canny(rgb2gray(image)) for image in images]
+displaySaveImage(cannys)
+return 1'''
     sobelImages = [sobel(image, False) for image in greyImgs]
-    #[print("mean/max is ", np.mean(i)/max(np.max(i, axis=1))) for i in sobelImages]
-    binary = [colorThreshold(image, getMax("zdjecie", image)*.1) for image in sobelImages]
+    binary = [colorThreshold(image, getMax("zdjecie", image)*.2) for image in sobelImages]
 
-    K = np.array([
-        [1,1,1],
-        [1,0,1],
-        [1,1,1]
-    ])
-    K = K/8
-    processStep2 = [ski.feature.canny(image, sigma=1) for image in binary]
-    displaySaveImage(processStep2)
+  #  processStep2 = [ski.feature.canny(image, sigma=1) for image in binary]
+    displaySaveImage(binary)
 
 
 def processOne(number):
     filename = "samolot%02d" % number
     print("processing " + filename)
     image = [readImage(filename)]
-    canny = ski.feature.canny(rgb2gray(image[0]), sigma=5)
+    showHist(rgb2gray(image[0])**.2)
+    canny = ski.feature.canny(rgb2gray(image[0]))
     showHist(canny)
-
+    return 1
     img = rgb2gray(image[0])**2
 
     sobelImage = sobel(img, False)
@@ -152,7 +146,7 @@ def main():
 
     if debug:
         try:
-            processOne(14)
+            processOne(19)
             #[processOne(i) for i in [2,6,13,14,15,20]]
         except FileNotFoundError:
             print("Podany plik nie istnieje")
@@ -166,7 +160,7 @@ def contour():
     import matplotlib.pyplot as plt
 
     from skimage import measure
-    img = readImage("samolot00")
+    img = readImage("samolot20")
     img = rgb2gray(img)
     # Find contours at a constant value of 0.8
     contours = measure.find_contours(img, 0.7)
@@ -184,4 +178,5 @@ def contour():
     ax.set_yticks([])
     plt.show()
 if __name__ == "__main__":
+    #contour()
     main()
