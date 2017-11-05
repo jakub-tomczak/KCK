@@ -48,7 +48,7 @@ def colorMap(map):
     return coloredMap
 
 
-sunVector = [-200, -200, 500]
+sunVector = [100, 100, 5]
 #col, row height
 def calculateAngle(mainVector, bottomVector, rightVector):
     import math as m
@@ -114,7 +114,7 @@ def main():
     if(debug):
         plt.savefig("map_d.pdf")
     else:
-        plt.savefig("map.pdf")
+        plt.savefig("map1.pdf")
 
 
 if __name__ == "__main__":
