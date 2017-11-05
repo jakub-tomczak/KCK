@@ -27,7 +27,7 @@ def hsv2rgb(h, s, v):
     elif hi == 3: r, g, b = p, q, v
     elif hi == 4: r, g, b = t, p, v
     elif hi == 5: r, g, b = v, p, q
-    return [r, g, b]
+    return [r*255, g*255, b*255]
 def lerp(start, stop, value):
     return start + (stop - start)*value
 
@@ -55,23 +55,25 @@ def processOne(number):
 
     unique, counts = np.unique(labeled, return_counts=True)
     values = dict(zip(unique, counts))
-    print(len(labeled), len(labeled[0]))
-    labeled = [[ (values[value] > imSize*0.001)*value for value in row] for row in labeled]
+    #print(values)
+    #print(len(labeled), len(labeled[0]))
+    labeled = [[ (values[value] > imSize*0.0005)*value for value in row] for row in labeled]
 
-    unique, counts = np.unique(labeled, return_counts=True)
-    values = dict(zip(unique, counts))
-    print(values)
+    #unique, counts = np.unique(labeled, return_counts=True)
+    #values = dict(zip(unique, counts))
+    #print(values)
 
 
-
+    #return 1
     for row in range(0, len(labeled)):
         for i in range(0, len(labeled[row])):
-            if labeled[row][i] != 0:
-                colored[row][i] = hsv2rgb(lerp(0, 360, labeled[row][i]/num), 1, 1)
-    #imColor = [[rank[labeled[row][value]] for value in range(0, len(row))] for row in range(0, len(labeled))]
-    print("Number of labels {}".format(num))
+            if labeled[row][i] > 0:
+                image[row][i] = hsv2rgb(lerp(0, 360, labeled[row][i]/num), 1, 1)
 
-    displaySaveImage([colored], "one/"+filename, resolution=100)
+    #imColor = [[rank[labeled[row][value]] for value in range(0, len(row))] for row in range(0, len(labeled))]
+    #print("Number of labels {}".format(num))
+
+    displaySaveImage([image], "one/"+filename, resolution=100)
 
 def colorThreshold(image, t):
     processed = (image > t) * 1
@@ -95,10 +97,10 @@ def displaySaveImage(imgs, filename = "planes.png", resolution = 500):
         subplot(rows, 2, i+1)
         io.imshow(imgs[i])
     fig.savefig("out/"+filename, dpi=resolution)
-
+    #plt.show()
 def main():
     #processAll()
-    #processOne(13)
-    [processOne(num) for num in range(0,21)]
+    processOne(23)
+    #[processOne(num) for num in range(0,21)]
 if __name__ == "__main__":
     main()
