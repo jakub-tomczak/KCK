@@ -70,7 +70,7 @@ def displaySaveImage(imgs, filename = "planes_bin.png"):
     for i in range(0, len(imgs)):
         subplot(rows, 2, i+1)
         io.imshow(imgs[i])
-    fig.savefig("out/"+filename, dpi=500)
+    fig.savefig("out/"+filename, dpi=100)
 
 def imageProcessor(img, filename="planes_bin.png"):
     img = rgb2gray(img)**.4
@@ -95,18 +95,14 @@ def imageProcessor(img, filename="planes_bin.png"):
     displaySaveImage([sobo2], filename)
 
 
-def processAll():
+def processAll(gamma = 1, threshold = .15):
     planesCount = 20
     images = [readImage("samolot%02d" % i) for i in range(0, planesCount+ 1)]
-    greyImgs = [rgb2gray(img)**.8 for img in images]
-    '''cannys = [ski.feature.canny(rgb2gray(image)) for image in images]
-displaySaveImage(cannys)
-return 1'''
+    greyImgs = [rgb2gray(img) for img in images]
     sobelImages = [sobel(image, False) for image in greyImgs]
-    binary = [colorThreshold(image, getMax("zdjecie", image)*.2) for image in sobelImages]
-
-  #  processStep2 = [ski.feature.canny(image, sigma=1) for image in binary]
-    displaySaveImage(binary)
+    K = np.ones([4,4])
+    binary = [mp.erosion( mp.dilation( colorThreshold(image, getMax("zdjecie", image)*threshold), selem=K)) for image in sobelImages]
+    displaySaveImage(binary, "planes_g{}_t{}_dilation_er_debug.png".format(gamma, threshold))
 
 
 def processOne(number):
@@ -153,6 +149,7 @@ def main():
 
     else:
         processAll()
+
     print("done")
 
 def contour():

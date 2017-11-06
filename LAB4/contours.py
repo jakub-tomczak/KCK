@@ -28,15 +28,68 @@ def hsv2rgb(h, s, v):
     elif hi == 4: r, g, b = t, p, v
     elif hi == 5: r, g, b = v, p, q
     return [r*255, g*255, b*255]
+
 def lerp(start, stop, value):
     return start + (stop - start)*value
+
+def findCenters(labeled, values):
+    xs = np.zeros(len(values))
+    ys = np.zeros(len(values))
+    count = np.zeros(len(values))
+
+    for row in range(0,len(labeled)):
+        for col in range(0,len(labeled[row])):
+            for key in values:
+                if key == 0:
+                    continue    #background number
+                if labeled[row][col] == key:
+                    xs[key] +=  col
+                    ys[key] += row
+                    count[key] +=1
+
+
+    for i in range(0, len(xs)):
+        if count[i] == 0:
+            continue
+
+        x = int(xs[i] / count[i])
+        y = int(ys[i] / count[i])
+        print(i, x , y, len(labeled)*len(labeled[0]))
+
+
+        for row in range(y-6, y+6):
+            for col in range(x-6, x+6):
+                labeled[row][col] = len(values)
+
+    return labeled
 
 def contourDetector(image, threshold = .15):
     gray = rgb2gray(image)
     sobelImage = filters.sobel(gray)
     thresold = mp.dilation(colorThreshold(sobelImage, getMax(sobelImage)*threshold))
-    #out = measure.label(thresold, background=0, neighbors=8, return_num=True)
-    return thresold
+
+    #labeling contours
+    #get labeled contours and num as a number of contours
+    labeled, num = measure.label(thresold, background=0, neighbors=8, return_num=True)
+    imSize = len(labeled) * len(labeled[0])
+
+    #unique - list of contours id
+    unique, counts = np.unique(labeled, return_counts=True)
+    values = dict(zip(unique, counts))
+    #remove contours that have less than .05% of total image pixels
+    labeled = [[ (values[value] > imSize*0.0005)*value for value in row] for row in labeled]
+
+    #finding centers
+    #iterate over all contours and find centers of contours
+    labeled = findCenters(labeled, values)
+
+    #rewrite labeled values colored with hsv2rgb
+    for row in range(0, len(labeled)):
+        for i in range(0, len(labeled[row])):
+            if labeled[row][i] > 0: # ommit background
+                    image[row][i] = hsv2rgb(lerp(120, 360 , labeled[row][i]/(num+1)), 1, 1)    #num+1 since we have another color for point
+
+    return image
 
 def processAll(threshold = .15):
     lastFileIndex = 20
@@ -49,31 +102,7 @@ def processOne(number):
     filename = "samolot%02d" % number
     image = readImage(filename)
     contour = contourDetector(image)
-    labeled, num = measure.label(contour, background=0, neighbors=8, return_num=True)
-    colored = np.zeros([len(labeled), len(labeled[0]), 3])
-    imSize = len(labeled) * len(labeled[0])
-
-    unique, counts = np.unique(labeled, return_counts=True)
-    values = dict(zip(unique, counts))
-    #print(values)
-    #print(len(labeled), len(labeled[0]))
-    labeled = [[ (values[value] > imSize*0.0005)*value for value in row] for row in labeled]
-
-    #unique, counts = np.unique(labeled, return_counts=True)
-    #values = dict(zip(unique, counts))
-    #print(values)
-
-
-    #return 1
-    for row in range(0, len(labeled)):
-        for i in range(0, len(labeled[row])):
-            if labeled[row][i] > 0:
-                image[row][i] = hsv2rgb(lerp(0, 360, labeled[row][i]/num), 1, 1)
-
-    #imColor = [[rank[labeled[row][value]] for value in range(0, len(row))] for row in range(0, len(labeled))]
-    #print("Number of labels {}".format(num))
-
-    displaySaveImage([image], "one/"+filename, resolution=100)
+    displaySaveImage([contour], filename, resolution=100)
 
 def colorThreshold(image, t):
     processed = (image > t) * 1
@@ -97,10 +126,9 @@ def displaySaveImage(imgs, filename = "planes.png", resolution = 500):
         subplot(rows, 2, i+1)
         io.imshow(imgs[i])
     fig.savefig("out/"+filename, dpi=resolution)
-    #plt.show()
 def main():
-    #processAll()
-    processOne(23)
+    processAll()
+    #processOne(7)
     #[processOne(num) for num in range(0,21)]
 if __name__ == "__main__":
     main()
